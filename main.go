@@ -3,7 +3,9 @@ package main
 import (
 	"crypto/rand"
 	"fmt"
+	"log"
 
+	"github.com/rohanthewiz/rweb"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -12,43 +14,90 @@ var Key []byte
 var HashedPassword string
 
 // key + password = hash
+func WebOptions() (menu string) {
+	menu = "===== Menu =====<br>"
+	menu += menuItem("Register")
+	menu += menuItem("Login")
+	menu += menuItem("Delete me")
+	menu += menuItem("Exit")
+	menu += "Enter your choice"
+	return
+}
+
+func menuItem(item string) string {
+	return fmt.Sprintf("<li>%s</li>", item)
+}
 
 func main() {
-	for {
-		fmt.Print(MenuOptions())
+	s := rweb.NewServer(
+		rweb.ServerOptions{
+			Address: "localhost:8000",
+			Verbose: true,
+		},
+	)
 
-		// Take in the user's choice
-		var choice int
-		_, err := fmt.Scanln(&choice) // read from keyboard
-		if err != nil {
-			fmt.Println("Error on input", err)
-			return
+	s.Get("/", func(ctx rweb.Context) error {
+		head := "<head><title>My Journal</title>"
+		head += "<style>body {background-color: lightblue;}</style></head>"
+		body := "<body><h1>My Journal</h1>" + WebOptions() + "</body>"
+		pageStart := "<html>"
+		pageEnd := "</html>"
+
+		page := pageStart + head + body + pageEnd
+		fmt.Println(page)
+		return ctx.WriteHTML(page)
+	})
+
+	log.Println(s.Run())
+
+	/*	// Middleware
+		s.Use(func(ctx rweb.Context) error {
+			start := time.Now()
+
+			defer func() {
+				fmt.Println(ctx.Request().Method(), ctx.Request().Path(), time.Since(start))
+			}()
+			return ctx.Next()
+		})
+
+
+	*/
+	/*	for {
+			fmt.Print(MenuOptions())
+
+			// Take in the user's choice
+			var choice int
+			_, err := fmt.Scanln(&choice) // read from keyboard
+			if err != nil {
+				fmt.Println("Error on input", err)
+				return
+			}
+
+			switch choice {
+			case 1:
+				// Register
+				fmt.Println("Register")
+				fmt.Println("Enter a password")
+				var password string
+				_, _ = fmt.Scanln(&password) // read from keyboard
+				_ = Register(password)
+
+			case 2:
+				// Login
+				var password string
+				fmt.Println("Enter your password")
+				_, _ = fmt.Scanln(&password) // read from keyboard
+				fmt.Println("Logging in...")
+				Login(password)
+			case 3:
+				// Delete me
+				fmt.Println("Delete me")
+			case 4:
+				// Exit
+				return
+			}
 		}
-
-		switch choice {
-		case 1:
-			// Register
-			fmt.Println("Register")
-			fmt.Println("Enter a password")
-			var password string
-			_, _ = fmt.Scanln(&password) // read from keyboard
-			_ = Register(password)
-
-		case 2:
-			// Login
-			var password string
-			fmt.Println("Enter your password")
-			_, _ = fmt.Scanln(&password) // read from keyboard
-			fmt.Println("Logging in...")
-			Login(password)
-		case 3:
-			// Delete me
-			fmt.Println("Delete me")
-		case 4:
-			// Exit
-			return
-		}
-	}
+	*/
 	/*	// This would be stored in database of some sort
 		// password + key (salt) = hash
 		passHash1 := "314043fe3a87549076364c6c96d2dd793dc21fa5c767c4c0204e9500dda93d94"
