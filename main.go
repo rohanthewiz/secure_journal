@@ -1,53 +1,13 @@
 package main
 
 import (
-	"crypto/rand"
-	"fmt"
 	"log"
-
-	"github.com/rohanthewiz/rweb"
-	"golang.org/x/crypto/sha3"
+	"secure_journal/web"
 )
 
-// Pretend DB
-var Key []byte
-var HashedPassword string
-
-// key + password = hash
-func WebOptions() (menu string) {
-	menu = "===== Menu =====<br>"
-	menu += menuItem("Register")
-	menu += menuItem("Login")
-	menu += menuItem("Delete me")
-	menu += menuItem("Exit")
-	menu += "Enter your choice"
-	return
-}
-
-func menuItem(item string) string {
-	return fmt.Sprintf("<li>%s</li>", item)
-}
-
 func main() {
-	s := rweb.NewServer(
-		rweb.ServerOptions{
-			Address: "localhost:8000",
-			Verbose: true,
-		},
-	)
 
-	s.Get("/", func(ctx rweb.Context) error {
-		head := "<head><title>My Journal</title>"
-		head += "<style>body {background-color: lightblue;}</style></head>"
-		body := "<body><h1>My Journal</h1>" + WebOptions() + "</body>"
-		pageStart := "<html>"
-		pageEnd := "</html>"
-
-		page := pageStart + head + body + pageEnd
-		fmt.Println(page)
-		return ctx.WriteHTML(page)
-	})
-
+	s := web.InitWeb()
 	log.Println(s.Run())
 
 	/*	// Middleware
@@ -127,75 +87,17 @@ func main() {
 	*/
 }
 
-func Register(password string) (err error) {
-	key := make([]byte, 32)
-	_, err = rand.Read(key)
-	if err != nil {
-		return err
-	}
-	HashedPassword = hashPassword(key, []byte(password))
-	Key = key
-	return nil
-}
-
-func Login(password string) (err error) {
-	fmt.Printf("You entered %q\n", password) // Super IMPORTANT!
-	// Compare the hash of the password with the hash of the stored password
-	// If they match, the password is correct
-	// If they don't match, the password is incorrect
-	currentHash := hashPassword(Key, []byte(password))
-	if currentHash == HashedPassword {
-		fmt.Println("You are logged in")
-		fmt.Println("Show me my private journals!")
-	} else {
-		fmt.Println("Password is incorrect")
-	}
-	return nil
-}
-
-func MenuOptions() (menu string) {
-	menu = fmt.Sprintln("===== Menu =====")
-	menu += fmt.Sprintln("1. Register")
-	menu += fmt.Sprintln("2. Login")
-	menu += fmt.Sprintln("3. Delete me")
-	menu += fmt.Sprintln("4. Exit")
-	menu += fmt.Sprint("Enter your choice: ")
-	return
-}
-
-func hashPassword(key []byte, dataToEncrypt []byte) (strHash string) {
-	// A MAC with 32 bytes of output has 256-bit security strength -- if you use at least a 32-byte-long key.
-	// A byte is 8 bits
-	hashOutput := make([]byte, 32)
-	hasher := sha3.NewShake256()
-
-	// Write the key into the hash.
-	_, err := hasher.Write(key)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// Now write the data.
-	_, err = hasher.Write(dataToEncrypt)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// Read 32 bytes of output from the hash into h.
-	_, err = hasher.Read(hashOutput)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	strHash = fmt.Sprintf("%x", hashOutput)
-
-	return
-}
-
-// SCRATCH
+/*  // SCRATCH
+//
+// func MenuOptions() (menu string) {
+// 	menu = fmt.Sprintln("===== Menu =====")
+// 	menu += fmt.Sprintln("1. Register")
+// 	menu += fmt.Sprintln("2. Login")
+// 	menu += fmt.Sprintln("3. Delete me")
+// 	menu += fmt.Sprintln("4. Exit")
+// 	menu += fmt.Sprint("Enter your choice: ")
+// 	return
+// }
 
 // Two kinds of hashes
 
@@ -204,6 +106,7 @@ func hashPassword(key []byte, dataToEncrypt []byte) (strHash string) {
 // Encrypt the journal entry
 
 // Display when needed
+*/
 
 // Generate a random salt
 /*salt := make([]byte, 32)
