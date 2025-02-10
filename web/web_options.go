@@ -1,9 +1,17 @@
 package web
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func menuItem(item string) string {
-	return fmt.Sprintf("<li>%s</li>", item)
+	arr := strings.Split(item, " ")
+	if len(arr) > 0 {
+		item = arr[0]
+	}
+
+	return fmt.Sprintf(`<li><a href="/%s">%s</a></li>`, strings.ToLower(item), item)
 }
 
 // key + password = hash
