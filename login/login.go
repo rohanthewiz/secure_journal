@@ -64,7 +64,9 @@ func hashPassword(key []byte, dataToEncrypt []byte) (strHash string) {
 		return
 	}
 
-	strHash = fmt.Sprintf("%x", hashOutput)
+	// strHash = fmt.Sprintf("%x", hashOutput)
+	strHash = string(hashOutput)
+	fmt.Printf("%s", strHash)
 
 	return
 }
