@@ -67,9 +67,10 @@ func InitWeb() (s *rweb.Server) {
 			page := pageStart + head + errorBody + pageEnd
 			return ctx.WriteHTML(page)
 		}
-
-		// Redirect to home page on success
-		return rootHandler(ctx)
+		successMsg := `<div style="margin: 20px;"><p style="color: green">Registration successful!</p></div>`
+		body := "<body><h1>My Journal</h1>" + successMsg + WebOptions() + "</body>"
+		page := pageStart + head + body + pageEnd
+		return ctx.WriteHTML(page)
 	})
 
 	return
