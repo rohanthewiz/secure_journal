@@ -15,7 +15,7 @@ func menuItem(item string) string {
 }
 
 // key + password = hash
-func WebOptions() (menu string) {
+func Menu() (menu string) {
 	menu = "===== Menu =====<br>"
 	menu += menuItem("Register")
 	menu += menuItem("Login")
