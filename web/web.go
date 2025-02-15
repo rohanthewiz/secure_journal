@@ -2,8 +2,9 @@ package web
 
 import (
 	"fmt"
-	"github.com/rohanthewiz/rweb"
 	"secure_journal/login"
+
+	"github.com/rohanthewiz/rweb"
 )
 
 func InitWeb() (s *rweb.Server) {
@@ -79,9 +80,12 @@ func InitWeb() (s *rweb.Server) {
 		page := pageStart + head + body + pageEnd
 		return ctx.WriteHTML(page)
 	})
+
 	s.Post("/login", func(ctx rweb.Context) (err error) {
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
+		fmt.Printf("Username: %q, Password: %q\n", username, password)
+
 		err = login.Login(username, password)
 		if err != nil {
 			errorBody := "<body><h1>My Journal</h1>" + Menu() +
