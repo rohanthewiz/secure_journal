@@ -37,6 +37,8 @@ func InitWeb() (s *rweb.Server) {
                 <input type="text" name="username" id="username"><br>
                 <label for="password">Password:</label><br>
                 <input type="password" name="password" id="password"><br>
+                <label for="password">Confirm Password:</label><br>
+                <input type="password" name="confirm_password" id="confirm_password"><br>
                 <input type="submit" value="Register">
             </form>` +
 			"</body>"
@@ -47,6 +49,17 @@ func InitWeb() (s *rweb.Server) {
 	s.Post("/register", func(ctx rweb.Context) (err error) {
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
+		confirm_password := ctx.Request().FormValue("confirm_password")
+
+		if password != confirm_password {
+			errorBody := "<body><h1>My Journal</h1>" + Menu() +
+				`<p style="color: red">Registration failed: Passwords don't match!</p>` +
+				`<a href="/register">Try again</a>` +
+				"</body>"
+			page := pageStart + head + errorBody + pageEnd
+			return ctx.WriteHTML(page)
+		}
+
 		err = login.Register(username, password)
 		if err != nil {
 			// Return an error page instead of just the error
@@ -77,6 +90,7 @@ func InitWeb() (s *rweb.Server) {
                 <input type="submit" value="Login">
             </form>` +
 			"</body>"
+
 		page := pageStart + head + body + pageEnd
 		return ctx.WriteHTML(page)
 	})
