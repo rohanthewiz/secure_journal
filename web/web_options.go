@@ -24,3 +24,20 @@ func Menu() (menu string) {
 	menu += "Enter your choice"
 	return
 }
+func LogMenu() (login string) {
+	login = "===== Menu =====<br>"
+	login += menuItem("Login")
+	return
+}
+func JournalMenu() (journal string) {
+	journal = "===== Menu =====<br>"
+	journal += menuItem("Log-out")
+	journal += menuItem("My-Journals")
+	return
+}
+func RegisterMenu() (login string) {
+	login = "===== Menu =====<br>"
+	login += menuItem("Register")
+	login += menuItem("Login")
+	return
+}
