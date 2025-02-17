@@ -3,7 +3,7 @@ module secure_journal
 go 1.22
 
 require (
-	github.com/rohanthewiz/rweb v0.1.1-0.20250126220617-b7b02d929ae5
+	github.com/rohanthewiz/rweb v0.1.8
 	golang.org/x/crypto v0.32.0
 )
 

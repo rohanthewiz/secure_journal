@@ -27,6 +27,7 @@ func Menu() (menu string) {
 func LogMenu() (login string) {
 	login = "===== Menu =====<br>"
 	login += menuItem("Login")
+	login += menuItem("Delete-User")
 	return
 }
 func JournalMenu() (journal string) {
@@ -39,5 +40,6 @@ func RegisterMenu() (login string) {
 	login = "===== Menu =====<br>"
 	login += menuItem("Register")
 	login += menuItem("Login")
+	login += menuItem("Delete-User")
 	return
 }

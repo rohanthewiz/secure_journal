@@ -119,6 +119,42 @@ func Login(username string, password string) (err error) {
 	}
 	return fmt.Errorf("invalid username or password")
 }
+func Delete(username string, password string) (err error) {
+	data, err := os.ReadFile("userdata.json")
+	if err != nil {
+		fmt.Println("Error reading file: ", err)
+		return err
+	}
+
+	var users []UserData
+	err = json.Unmarshal(data, &users)
+	if err != nil {
+		fmt.Println("Error unmarshaling JSON:", err)
+		return err
+	}
+
+	for i, user := range users {
+		if user.Username == username {
+			keyBytes, err := hex.DecodeString(user.Key)
+			if err != nil {
+				fmt.Println("Error decoding key:", err)
+				return err
+			}
+			currentHash := hashPassword(keyBytes, []byte(password))
+			if currentHash == user.Password {
+				// do deletion if passwords match
+				users = append(users[:i], users[i+1:]...)
+
+				jsonData, err := json.MarshalIndent(users, "", "   ")
+				if err != nil {
+					return err
+				}
+				return os.WriteFile("userdata.json", jsonData, 0644)
+			}
+		}
+	}
+	return
+}
 
 func hashPassword(key []byte, dataToEncrypt []byte) string {
 	hashOutput := make([]byte, 32)
