@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"secure_journal/login"
 
+	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
 )
 
@@ -16,9 +17,11 @@ func InitWeb() (s *rweb.Server) {
 	)
 
 	head := "<head><title>My Journal</title>"
-	head += "<style>body {background-color: lightblue;}</style></head>"
+	head += "<style>body {background-color: lightblue;} h1 a {text-decoration: none; color: inherit;}</style></head>"
 	pageStart := "<html>"
 	pageEnd := "</html>"
+
+	pageHeader := `<h1><a href="/" style="text-decoration: none; color: inherit;">My Journal</a></h1>`
 
 	rootHandler := func(ctx rweb.Context) error {
 		body := "<body><h1>My Journal</h1>" + RegisterMenu() + "</body>"
@@ -29,21 +32,64 @@ func InitWeb() (s *rweb.Server) {
 
 	s.Get("/", rootHandler)
 
+	// s.Get("/register", func(ctx rweb.Context) (err error) {
+	// 	body := "<body>" + pageHeader + RegisterMenu() +
+	// 		`<p style="color: navy">Register</p>` +
+	// 		`<form action="/register" method="POST">
+	//                <label for="username">Username:</label><br>
+	//                <input type="text" name="username" id="username"><br>
+	//                <label for="password">Password:</label><br>
+	//                <input type="password" name="password" id="password"><br>
+	//                <label for="password">Confirm Password:</label><br>
+	//                <input type="password" name="confirm_password" id="confirm_password"><br>
+	//                <input type="submit" value="Register">
+	//            </form>` +
+	// 		"</body>"
+	// 	page := pageStart + head + body + pageEnd
+	// 	return ctx.WriteHTML(page)
+	// })
+
 	s.Get("/register", func(ctx rweb.Context) (err error) {
-		body := "<body><h1>My Journal</h1>" + Menu() +
-			`<p style="color: navy">Register</p>` +
-			`<form action="/register" method="POST">
-                <label for="username">Username:</label><br>
-                <input type="text" name="username" id="username"><br>
-                <label for="password">Password:</label><br>
-                <input type="password" name="password" id="password"><br>
-                <label for="password">Confirm Password:</label><br>
-                <input type="password" name="confirm_password" id="confirm_password"><br>
-                <input type="submit" value="Register">
-            </form>` +
-			"</body>"
-		page := pageStart + head + body + pageEnd
-		return ctx.WriteHTML(page)
+		b := element.NewBuilder()
+		e := b.Ele
+		t := b.Text
+
+		e("html").R(
+			e("head").R(
+				e("title").R(
+					t("My Journal"),
+				),
+				e("style").R(
+					t("body {background-color: lightblue;} h1 a {text-decoration: none; color: inherit;}"),
+				),
+			),
+			e("body").R(
+				e("h1").R(
+					t(pageHeader),
+				),
+				e("div").R(
+					t(RegisterMenu()),
+				),
+				e("div").R(
+					e("form", "action", "/register", "method", "POST").R(
+						e("label", "for", "username").R(t("Username:")),
+						e("br"),
+						e("input", "type", "username", "id", "username").R(),
+						e("br"),
+						e("label", "for", "password").R(t("Password:")),
+						e("br"),
+						e("input", "type", "password", "id", "password").R(),
+						e("br"),
+						e("label", "for", "confirm_password").R(t("Confirm_Password:")),
+						e("br"),
+						e("input", "type", "password", "id", "confirm_password").R(),
+						e("br"),
+						e("input", "type", "submit", "value", "Register"),
+					),
+				),
+			),
+		)
+		return ctx.WriteHTML(b.String())
 	})
 
 	s.Post("/register", func(ctx rweb.Context) (err error) {
@@ -52,7 +98,7 @@ func InitWeb() (s *rweb.Server) {
 		confirm_password := ctx.Request().FormValue("confirm_password")
 
 		if password != confirm_password {
-			errorBody := "<body><h1>My Journal</h1>" + RegisterMenu() +
+			errorBody := "<body>" + pageHeader + RegisterMenu() +
 				`<p style="color: red">Registration failed: Passwords don't match!</p>` +
 				`<a href="/register">Try again</a>` +
 				"</body>"
@@ -63,7 +109,7 @@ func InitWeb() (s *rweb.Server) {
 		err = login.Register(username, password)
 		if err != nil {
 			// Return an error page instead of just the error
-			errorBody := "<body><h1>My Journal</h1>" + RegisterMenu() +
+			errorBody := "<body>" + pageHeader + RegisterMenu() +
 				`<p style="color: red">Registration failed: ` + err.Error() + `</p>` +
 				`<a href="/register">Try again</a>` +
 				"</body>"
@@ -72,7 +118,7 @@ func InitWeb() (s *rweb.Server) {
 		}
 
 		successMsg := `<div style="margin: 20px;"><p style="color: green">Registration successful!</p></div>`
-		body := "<body><h1>My Journal</h1>" + successMsg + LogMenu() + "</body>"
+		body := "<body>" + pageHeader + successMsg + LogMenu() + "</body>"
 		page := pageStart + head + body + pageEnd
 
 		return ctx.WriteHTML(page)
@@ -80,7 +126,7 @@ func InitWeb() (s *rweb.Server) {
 	})
 
 	s.Get("/login", func(ctx rweb.Context) (err error) {
-		body := "<body><h1>My Journal</h1>" + RegisterMenu() +
+		body := "<body>" + pageHeader + RegisterMenu() +
 			`<p style="color: navy">Login</p>` +
 			`<form action="/login" method="POST">
                 <label for="username">Username:</label><br>
@@ -98,25 +144,33 @@ func InitWeb() (s *rweb.Server) {
 	s.Post("/login", func(ctx rweb.Context) (err error) {
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
-		fmt.Printf("Username: %q, Password: %q\n", username, password)
-
+		if password == "" || username == "" {
+			errorBody := "<body>" + pageHeader + RegisterMenu() +
+				`<p style="color: red">Login failed:You must enter a password</p>` +
+				`<a href="/login">Try again</a>` +
+				"</body>"
+			page := pageStart + head + errorBody + pageEnd
+			return ctx.WriteHTML(page)
+		}
 		err = login.Login(username, password)
 		if err != nil {
-			errorBody := "<body><h1>My Journal</h1>" + RegisterMenu() +
+			errorBody := "<body>" + pageHeader + RegisterMenu() +
 				`<p style="color: red">Login failed: ` + err.Error() + `</p>` +
 				`<a href="/login">Try again</a>` +
 				"</body>"
 			page := pageStart + head + errorBody + pageEnd
 			return ctx.WriteHTML(page)
 		}
-		body := "<body><h1>My Journal</h1>" + JournalMenu() +
+
+		body := "<body>" + pageHeader + JournalMenu() +
 			`<p style="color: green">Welcome to your Journals!</p>` +
 			"</body>"
 		page := pageStart + head + body + pageEnd
 		return ctx.WriteHTML(page)
 	})
+
 	s.Get("/my-journals", func(ctx rweb.Context) (err error) {
-		body := "<body><h1>My Journal</h1>" +
+		body := "<body>" + pageHeader +
 			"<h2>Your Very First Journal Entry!</h2>" +
 			"<p>I can do all things through christ who strengthens me!</p>" +
 			"</body>"
@@ -124,10 +178,44 @@ func InitWeb() (s *rweb.Server) {
 		page := pageStart + head + body + pageEnd
 		return ctx.WriteHTML(page)
 	})
+
 	s.Get("/log-out", func(ctx rweb.Context) (err error) {
 		return rootHandler(ctx)
 	})
+	s.Get("/delete-user", func(ctx rweb.Context) (err error) {
+		body := "<body>" + pageHeader + RegisterMenu() +
+			`<p style="color: navy">Delete User</p>` +
+			`<form action="/delete-user" method="POST">
+                <label for="username">Username:</label><br>
+                <input type="text" name="username" id="username"><br>
+                <label for="password">Password:</label><br>
+                <input type="password" name="password" id="password"><br>
+                <input type="submit" value="Delete">
+            </form>` +
+			"</body>"
+		page := pageStart + head + body + pageEnd
+		return ctx.WriteHTML(page)
+	})
 
+	s.Post("/delete-user", func(ctx rweb.Context) (err error) {
+		password := ctx.Request().FormValue("password")
+		username := ctx.Request().FormValue("username")
+
+		err = login.Delete(username, password)
+		if err != nil {
+			errorBody := "<body>" + pageHeader + RegisterMenu() +
+				`<p style="color: red">Deletion failed: ` + err.Error() + `</p>` +
+				`<a href="/login">Try again</a>` +
+				"</body>"
+			page := pageStart + head + errorBody + pageEnd
+			return ctx.WriteHTML(page)
+		}
+		successMsg := "<body>" + pageHeader + RegisterMenu() +
+			`<p style="color: green">Deletion successful!</p>` +
+			"</body>"
+		page := pageStart + head + successMsg + pageEnd
+		return ctx.WriteHTML(page)
+	})
 	//initweb return
 	return
 }
