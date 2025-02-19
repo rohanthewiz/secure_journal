@@ -1,7 +1,7 @@
 git.akyoto.dev/go/assert v0.1.3 h1:QwCUbmG4aZYsNk/OuRBz1zWVKmGlDUHhOnnDBfn8Qw8=
 git.akyoto.dev/go/assert v0.1.3/go.mod h1:0GzMaM0eURuDwtGkJJkCsI7r2aUKr+5GmWNTFPgDocM=
-github.com/rohanthewiz/rweb v0.1.1-0.20250126220617-b7b02d929ae5 h1:EAOkjE8H8jGQJa28PqR12Hl/Mtti75MNJc4xc3jQPQ8=
-github.com/rohanthewiz/rweb v0.1.1-0.20250126220617-b7b02d929ae5/go.mod h1:GBeM+x9dq6LY3GCQXRFNxX5sLpBBcZdsCLw39qj2PmA=
+github.com/rohanthewiz/element v0.4.0 h1:zY6cVEtJZnBPjzBXAyw8haGHtILM+LwXAqED0NAJ2lM=
+github.com/rohanthewiz/element v0.4.0/go.mod h1:yxmrFVnO9eQQ7GbjRfJgJG9u8yHUjTTxy/6ji3PNhXY=
 github.com/rohanthewiz/rweb v0.1.8 h1:cVBP+7osCkivk8U92Bkpzl9RnploED1wrF9RLrktFP8=
 github.com/rohanthewiz/rweb v0.1.8/go.mod h1:GBeM+x9dq6LY3GCQXRFNxX5sLpBBcZdsCLw39qj2PmA=
 golang.org/x/crypto v0.32.0 h1:euUpcYgM8WcP71gNpTqQCn6rC2t6ULUPiOzfWaXVVfc=
