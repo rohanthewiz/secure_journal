@@ -88,12 +88,12 @@ func InitWeb() (s *rweb.Server) {
 		confirm_password := ctx.Request().FormValue("confirm_password")
 
 		if password != confirm_password {
-			return errorHandler(ctx, "Registration failed: Passwords don't match!")
+			return errorHandler(ctx, "Registration failed: Passwords don't match!", RegisterMenu)
 		}
 
 		err = login.Register(username, password)
 		if err != nil {
-			return errorHandler(ctx, "Registration failed:"+err.Error())
+			return errorHandler(ctx, "Registration failed:"+err.Error(), RegisterMenu)
 		}
 
 		return successHandler(ctx, "Registration Successful!", LogMenu)
@@ -127,11 +127,11 @@ func InitWeb() (s *rweb.Server) {
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
 		if password == "" || username == "" {
-			return errorHandler(ctx, "Login Failed: You must enter a password")
+			return errorHandler(ctx, "Login Failed: You must enter a password", RegisterMenu)
 		}
 		err = login.Login(username, password)
 		if err != nil {
-			return errorHandler(ctx, "Login Failed:"+err.Error())
+			return errorHandler(ctx, "Login Failed:"+err.Error(), RegisterMenu)
 		}
 		return successHandler(ctx, "Welcome to your Journals!", JournalMenu)
 	})
@@ -184,7 +184,7 @@ func InitWeb() (s *rweb.Server) {
 
 		err = login.Delete(username, password)
 		if err != nil {
-			return errorHandler(ctx, err.Error())
+			return errorHandler(ctx, err.Error(), RegisterMenu)
 		}
 		return successHandler(ctx, "Deletion Successful!", RegisterMenu)
 	})
@@ -222,7 +222,7 @@ func successHandler(ctx rweb.Context, successMsg string, menufunc MenuFunc) erro
 	)
 	return ctx.WriteHTML(b.String())
 }
-func errorHandler(ctx rweb.Context, errorMessage string) error {
+func errorHandler(ctx rweb.Context, errorMessage string, menufunc MenuFunc) error {
 	b := element.NewBuilder()
 	e := b.Ele
 	t := b.Text
@@ -241,7 +241,7 @@ func errorHandler(ctx rweb.Context, errorMessage string) error {
 				t(`<h1><a href="/" style="text-decoration: none; color: inherit;">My Journal</a></h1>`),
 			),
 			e("div").R(
-				t(RegisterMenu()),
+				t(menufunc()),
 			),
 			e("div").R(
 				e("p", "style", "color: red").R(
