@@ -1,12 +1,14 @@
 package web
 
 import (
-	"fmt"
+	_ "fmt"
 	"secure_journal/login"
 
 	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
 )
+
+type MenuFunc func() string
 
 func InitWeb() (s *rweb.Server) {
 	s = rweb.NewServer(
@@ -16,45 +18,16 @@ func InitWeb() (s *rweb.Server) {
 		},
 	)
 
-	head := "<head><title>My Journal</title>"
-	head += "<style>body {background-color: lightblue;} h1 a {text-decoration: none; color: inherit;}</style></head>"
-	pageStart := "<html>"
-	pageEnd := "</html>"
-
-	pageHeader := `<h1><a href="/" style="text-decoration: none; color: inherit;">My Journal</a></h1>`
-
-	rootHandler := func(ctx rweb.Context) error {
-		body := "<body><h1>My Journal</h1>" + RegisterMenu() + "</body>"
-		page := pageStart + head + body + pageEnd
-		fmt.Println(page)
-		return ctx.WriteHTML(page)
+	chooseMenu := func(menufunc MenuFunc) string {
+		return menufunc()
 	}
 
-	s.Get("/", rootHandler)
-
-	// s.Get("/register", func(ctx rweb.Context) (err error) {
-	// 	body := "<body>" + pageHeader + RegisterMenu() +
-	// 		`<p style="color: navy">Register</p>` +
-	// 		`<form action="/register" method="POST">
-	//                <label for="username">Username:</label><br>
-	//                <input type="text" name="username" id="username"><br>
-	//                <label for="password">Password:</label><br>
-	//                <input type="password" name="password" id="password"><br>
-	//                <label for="password">Confirm Password:</label><br>
-	//                <input type="password" name="confirm_password" id="confirm_password"><br>
-	//                <input type="submit" value="Register">
-	//            </form>` +
-	// 		"</body>"
-	// 	page := pageStart + head + body + pageEnd
-	// 	return ctx.WriteHTML(page)
-	// })
-
-	s.Get("/register", func(ctx rweb.Context) (err error) {
+	headerMenu := func(menu MenuFunc) string {
 		b := element.NewBuilder()
 		e := b.Ele
 		t := b.Text
 
-		e("html").R(
+		e("div").R(
 			e("head").R(
 				e("title").R(
 					t("My Journal"),
@@ -65,27 +38,44 @@ func InitWeb() (s *rweb.Server) {
 			),
 			e("body").R(
 				e("h1").R(
-					t(pageHeader),
+					t(`<h1><a href="/" style="text-decoration: none; color: inherit;">My Journal</a></h1>`),
 				),
 				e("div").R(
-					t(RegisterMenu()),
+					t(chooseMenu(menu)),
 				),
-				e("div").R(
-					e("form", "action", "/register", "method", "POST").R(
-						e("label", "for", "username").R(t("Username:")),
-						e("br"),
-						e("input", "type", "username", "id", "username").R(),
-						e("br"),
-						e("label", "for", "password").R(t("Password:")),
-						e("br"),
-						e("input", "type", "password", "id", "password").R(),
-						e("br"),
-						e("label", "for", "confirm_password").R(t("Confirm_Password:")),
-						e("br"),
-						e("input", "type", "password", "id", "confirm_password").R(),
-						e("br"),
-						e("input", "type", "submit", "value", "Register"),
-					),
+			),
+		)
+		return b.String()
+	}
+
+	rootHandler := func(ctx rweb.Context) error {
+		return ctx.WriteHTML(headerMenu(RegisterMenu))
+	}
+
+	s.Get("/", rootHandler)
+
+	s.Get("/register", func(ctx rweb.Context) (err error) {
+		b := element.NewBuilder()
+		e := b.Ele
+		t := b.Text
+
+		e("html").R(
+			t(headerMenu(RegisterMenu)),
+			e("div").R(
+				e("form", "action", "/register", "method", "POST").R(
+					e("label", "for", "username").R(t("Username:")),
+					e("br"),
+					e("input", "type", "username", "id", "username").R(),
+					e("br"),
+					e("label", "for", "password").R(t("Password:")),
+					e("br"),
+					e("input", "type", "password", "id", "password").R(),
+					e("br"),
+					e("label", "for", "confirm_password").R(t("Confirm_Password:")),
+					e("br"),
+					e("input", "type", "password", "id", "confirm_password").R(),
+					e("br"),
+					e("input", "type", "submit", "value", "Register"),
 				),
 			),
 		)
@@ -98,103 +88,94 @@ func InitWeb() (s *rweb.Server) {
 		confirm_password := ctx.Request().FormValue("confirm_password")
 
 		if password != confirm_password {
-			errorBody := "<body>" + pageHeader + RegisterMenu() +
-				`<p style="color: red">Registration failed: Passwords don't match!</p>` +
-				`<a href="/register">Try again</a>` +
-				"</body>"
-			page := pageStart + head + errorBody + pageEnd
-			return ctx.WriteHTML(page)
+			return errorHandler(ctx, "Registration failed: Passwords don't match!")
 		}
 
 		err = login.Register(username, password)
 		if err != nil {
-			// Return an error page instead of just the error
-			errorBody := "<body>" + pageHeader + RegisterMenu() +
-				`<p style="color: red">Registration failed: ` + err.Error() + `</p>` +
-				`<a href="/register">Try again</a>` +
-				"</body>"
-			page := pageStart + head + errorBody + pageEnd
-			return ctx.WriteHTML(page)
+			return errorHandler(ctx, "Registration failed:"+err.Error())
 		}
 
-		successMsg := `<div style="margin: 20px;"><p style="color: green">Registration successful!</p></div>`
-		body := "<body>" + pageHeader + successMsg + LogMenu() + "</body>"
-		page := pageStart + head + body + pageEnd
-
-		return ctx.WriteHTML(page)
-
+		return successHandler(ctx, "Registration Successful!", LogMenu)
 	})
 
 	s.Get("/login", func(ctx rweb.Context) (err error) {
-		body := "<body>" + pageHeader + RegisterMenu() +
-			`<p style="color: navy">Login</p>` +
-			`<form action="/login" method="POST">
-                <label for="username">Username:</label><br>
-                <input type="text" name="username" id="username"><br>
-                <label for="password">Password:</label><br>
-                <input type="password" name="password" id="password"><br>
-                <input type="submit" value="Login">
-            </form>` +
-			"</body>"
+		b := element.NewBuilder()
+		e := b.Ele
+		t := b.Text
 
-		page := pageStart + head + body + pageEnd
-		return ctx.WriteHTML(page)
+		e("html").R(
+			t(headerMenu(RegisterMenu)),
+			e("div").R(
+				e("form", "action", "/login", "method", "POST").R(
+					e("label", "for", "username").R(t("Username:")),
+					e("br"),
+					e("input", "type", "username", "id", "username").R(),
+					e("br"),
+					e("label", "for", "password").R(t("Password:")),
+					e("br"),
+					e("input", "type", "password", "id", "password").R(),
+					e("br"),
+					e("input", "type", "submit", "value", "Login"),
+				),
+			),
+		)
+		return ctx.WriteHTML(b.String())
 	})
 
 	s.Post("/login", func(ctx rweb.Context) (err error) {
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
 		if password == "" || username == "" {
-			errorBody := "<body>" + pageHeader + RegisterMenu() +
-				`<p style="color: red">Login failed:You must enter a password</p>` +
-				`<a href="/login">Try again</a>` +
-				"</body>"
-			page := pageStart + head + errorBody + pageEnd
-			return ctx.WriteHTML(page)
+			return errorHandler(ctx, "Login Failed: You must enter a password")
 		}
 		err = login.Login(username, password)
 		if err != nil {
-			errorBody := "<body>" + pageHeader + RegisterMenu() +
-				`<p style="color: red">Login failed: ` + err.Error() + `</p>` +
-				`<a href="/login">Try again</a>` +
-				"</body>"
-			page := pageStart + head + errorBody + pageEnd
-			return ctx.WriteHTML(page)
+			return errorHandler(ctx, "Login Failed:"+err.Error())
 		}
-
-		body := "<body>" + pageHeader + JournalMenu() +
-			`<p style="color: green">Welcome to your Journals!</p>` +
-			"</body>"
-		page := pageStart + head + body + pageEnd
-		return ctx.WriteHTML(page)
+		return successHandler(ctx, "Welcome to your Journals!", JournalMenu)
 	})
 
 	s.Get("/my-journals", func(ctx rweb.Context) (err error) {
-		body := "<body>" + pageHeader +
-			"<h2>Your Very First Journal Entry!</h2>" +
-			"<p>I can do all things through christ who strengthens me!</p>" +
-			"</body>"
+		b := element.NewBuilder()
+		e := b.Ele
+		t := b.Text
 
-		page := pageStart + head + body + pageEnd
-		return ctx.WriteHTML(page)
+		e("html").R(
+			t(headerMenu(noMenu)),
+			e("p").R(
+				t("I can do all things through christ who strengthens me!"),
+			),
+		)
+		return ctx.WriteHTML(b.String())
 	})
 
 	s.Get("/log-out", func(ctx rweb.Context) (err error) {
 		return rootHandler(ctx)
 	})
+
 	s.Get("/delete-user", func(ctx rweb.Context) (err error) {
-		body := "<body>" + pageHeader + RegisterMenu() +
-			`<p style="color: navy">Delete User</p>` +
-			`<form action="/delete-user" method="POST">
-                <label for="username">Username:</label><br>
-                <input type="text" name="username" id="username"><br>
-                <label for="password">Password:</label><br>
-                <input type="password" name="password" id="password"><br>
-                <input type="submit" value="Delete">
-            </form>` +
-			"</body>"
-		page := pageStart + head + body + pageEnd
-		return ctx.WriteHTML(page)
+		b := element.NewBuilder()
+		e := b.Ele
+		t := b.Text
+
+		e("html").R(
+			t(headerMenu(RegisterMenu)),
+			e("div").R(
+				e("form", "action", "/delete-user", "method", "POST").R(
+					e("label", "for", "username").R(t("Username:")),
+					e("br"),
+					e("input", "type", "username", "id", "username").R(),
+					e("br"),
+					e("label", "for", "password").R(t("Password:")),
+					e("br"),
+					e("input", "type", "password", "id", "password").R(),
+					e("br"),
+					e("input", "type", "submit", "value", "Delete"),
+				),
+			),
+		)
+		return ctx.WriteHTML(b.String())
 	})
 
 	s.Post("/delete-user", func(ctx rweb.Context) (err error) {
@@ -203,19 +184,74 @@ func InitWeb() (s *rweb.Server) {
 
 		err = login.Delete(username, password)
 		if err != nil {
-			errorBody := "<body>" + pageHeader + RegisterMenu() +
-				`<p style="color: red">Deletion failed: ` + err.Error() + `</p>` +
-				`<a href="/login">Try again</a>` +
-				"</body>"
-			page := pageStart + head + errorBody + pageEnd
-			return ctx.WriteHTML(page)
+			return errorHandler(ctx, err.Error())
 		}
-		successMsg := "<body>" + pageHeader + RegisterMenu() +
-			`<p style="color: green">Deletion successful!</p>` +
-			"</body>"
-		page := pageStart + head + successMsg + pageEnd
-		return ctx.WriteHTML(page)
+		return successHandler(ctx, "Deletion Successful!", RegisterMenu)
 	})
+
 	//initweb return
 	return
+}
+func successHandler(ctx rweb.Context, successMsg string, menufunc MenuFunc) error {
+	b := element.NewBuilder()
+	e := b.Ele
+	t := b.Text
+
+	e("html").R(
+		e("head").R(
+			e("title").R(
+				t("My Journal"),
+			),
+			e("style").R(
+				t("body {background-color: lightblue;} h1 a {text-decoration: none; color: inherit;}"),
+			),
+		),
+		e("body").R(
+			e("h1").R(
+				t(`<h1><a href="/" style="text-decoration: none; color: inherit;">My Journal</a></h1>`),
+			),
+			e("div").R(
+				t(menufunc()),
+			),
+			e("div").R(
+				e("p", "style", "color: green").R(
+					t(successMsg),
+				),
+			),
+		),
+	)
+	return ctx.WriteHTML(b.String())
+}
+func errorHandler(ctx rweb.Context, errorMessage string) error {
+	b := element.NewBuilder()
+	e := b.Ele
+	t := b.Text
+
+	e("html").R(
+		e("head").R(
+			e("title").R(
+				t("My Journal"),
+			),
+			e("style").R(
+				t("body {background-color: lightblue;} h1 a {text-decoration: none; color: inherit;}"),
+			),
+		),
+		e("body").R(
+			e("h1").R(
+				t(`<h1><a href="/" style="text-decoration: none; color: inherit;">My Journal</a></h1>`),
+			),
+			e("div").R(
+				t(RegisterMenu()),
+			),
+			e("div").R(
+				e("p", "style", "color: red").R(
+					t(errorMessage),
+				),
+				e("a", "href", "/register").R(
+					t("Try again"),
+				),
+			),
+		),
+	)
+	return ctx.WriteHTML(b.String())
 }
