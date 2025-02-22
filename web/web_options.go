@@ -43,3 +43,6 @@ func RegisterMenu() (login string) {
 	login += menuItem("Delete-User")
 	return
 }
+func noMenu() (none string) {
+	return
+}
