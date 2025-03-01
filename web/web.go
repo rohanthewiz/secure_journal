@@ -1,10 +1,9 @@
 package web
 
 import (
-	_ "fmt"
+	"fmt"
 	"secure_journal/login"
 
-	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
 )
 
@@ -17,7 +16,6 @@ func InitWeb() (s *rweb.Server) {
 			Verbose: true,
 		},
 	)
-
 	// HANDLERS
 
 	rootHandler := func(ctx rweb.Context) error {
@@ -32,7 +30,7 @@ func InitWeb() (s *rweb.Server) {
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
 		confirm_password := ctx.Request().FormValue("confirm_password")
-
+		fmt.Printf("%s, %s, %s\n", username, password, confirm_password)
 		if password != confirm_password {
 			return errorHandler(ctx, "Registration failed: Passwords don't match!", RegisterMenu)
 		}
@@ -45,32 +43,10 @@ func InitWeb() (s *rweb.Server) {
 		return successHandler(ctx, "Registration Successful!", LogMenu)
 	})
 
-	s.Post("/login", func(ctx rweb.Context) (err error) {
-		password := ctx.Request().FormValue("password")
-		username := ctx.Request().FormValue("username")
-		if password == "" || username == "" {
-			return errorHandler(ctx, "Login Failed: You must enter a password", RegisterMenu)
-		}
-		err = login.Login(username, password)
-		if err != nil {
-			return errorHandler(ctx, "Login Failed:"+err.Error(), RegisterMenu)
-		}
-		return successHandler(ctx, "Welcome to your Journals!", JournalMenu)
-	})
+	//get and post are within functions
+	loginForm(s)
 
-	s.Get("/my-journals", func(ctx rweb.Context) (err error) {
-		b := element.NewBuilder()
-		e := b.Ele
-		t := b.Text
-
-		e("html").R(
-			// TODO - Fix t(headerMenu(noMenu)),
-			e("p").R(
-				t("I can do all things through christ who strengthens me!"),
-			),
-		)
-		return ctx.WriteHTML(b.String())
-	})
+	firstJournal(s)
 
 	s.Get("/log-out", func(ctx rweb.Context) (err error) {
 		return rootHandler(ctx)
