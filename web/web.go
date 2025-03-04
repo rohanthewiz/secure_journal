@@ -19,7 +19,7 @@ func InitWeb() (s *rweb.Server) {
 	// HANDLERS
 
 	rootHandler := func(ctx rweb.Context) error {
-		return ctx.WriteHTML(PageLayout(RegisterMenu, ""))
+		return ctx.WriteHTML(PageLayout(MenuProvider(strRegister, strLogin, strDeleteUser), ""))
 	}
 
 	s.Get("/", rootHandler)
@@ -32,15 +32,15 @@ func InitWeb() (s *rweb.Server) {
 		confirm_password := ctx.Request().FormValue("confirm_password")
 		fmt.Printf("%s, %s, %s\n", username, password, confirm_password)
 		if password != confirm_password {
-			return errorHandler(ctx, "Registration failed: Passwords don't match!", RegisterMenu)
+			return errorHandler(ctx, "Registration failed: Passwords don't match!", MenuProvider(strRegister, strLogin, strDeleteUser))
 		}
 
 		err = login.Register(username, password)
 		if err != nil {
-			return errorHandler(ctx, "Registration failed:"+err.Error(), RegisterMenu)
+			return errorHandler(ctx, "Registration failed:"+err.Error(), MenuProvider(strRegister, strLogin, strDeleteUser))
 		}
 
-		return successHandler(ctx, "Registration Successful!", LogMenu)
+		return successHandler(ctx, "Registration Successful!", MenuProvider(strRegister, strLogin, strDeleteUser))
 	})
 
 	//get and post are within functions
@@ -60,9 +60,9 @@ func InitWeb() (s *rweb.Server) {
 
 		err = login.Delete(username, password)
 		if err != nil {
-			return errorHandler(ctx, err.Error(), RegisterMenu)
+			return errorHandler(ctx, err.Error(), MenuProvider(strRegister, strLogin, strDeleteUser))
 		}
-		return successHandler(ctx, "Deletion Successful!", RegisterMenu)
+		return successHandler(ctx, "Deletion Successful!", MenuProvider(strRegister, strLogin, strDeleteUser))
 	})
 
 	// initweb return

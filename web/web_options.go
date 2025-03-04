@@ -1,48 +1,62 @@
 package web
 
 import (
-	"fmt"
+	"github.com/rohanthewiz/element"
 	"strings"
 )
 
-func menuItem(item string) string {
-	arr := strings.Split(item, " ")
-	if len(arr) > 0 {
-		item = arr[0]
+// List of strings for the menus
+var strRegister = "Register"
+var strLogin = "Login"
+var strDeleteUser = "Delete-User"
+var strMyJournal = "My-Journals"
+var strLogout = "Logout"
+
+func MenuProvider(items ...string) MenuFunc {
+	return func() string {
+		return Menu(items...)
 	}
-
-	return fmt.Sprintf(`<li><a href="/%s">%s</a></li>`, strings.ToLower(item), item)
 }
 
-// key + password = hash
-func Menu() (menu string) {
-	menu = "===== Menu =====<br>"
-	menu += menuItem("Register")
-	menu += menuItem("Login")
-	menu += menuItem("Delete me")
-	menu += menuItem("Exit")
-	menu += "Enter your choice"
-	return
+func Menu(str ...string) string {
+	b := element.NewBuilder()
+	e, t := b.Ele, b.Text
+
+	e("div").R(
+		e("style").R(
+			t(`ul {
+					padding: 0;
+					margin: 0;
+					list-style: none;
+				}
+				li {
+					display: inline-block;
+					margin-right: 15px;
+				}`),
+		),
+		e("ul").R(
+			func() []any {
+				var items []any
+				for _, ele := range str {
+					items = append(items, t(listCreate(ele)))
+				}
+				return items
+			}()...,
+		),
+	)
+	return b.String()
 }
-func LogMenu() (login string) {
-	login = "===== Menu =====<br>"
-	login += menuItem("Login")
-	login += menuItem("Delete-User")
-	return
-}
-func JournalMenu() (journal string) {
-	journal = "===== Menu =====<br>"
-	journal += menuItem("Log-out")
-	journal += menuItem("My-Journals")
-	return
-}
-func RegisterMenu() (login string) {
-	login = "===== Menu =====<br>"
-	login += menuItem("Register")
-	login += menuItem("Login")
-	login += menuItem("Delete-User")
-	return
-}
-func noMenu() (none string) {
-	return
+
+func listCreate(str string) string {
+	b := element.NewBuilder()
+	e, t := b.Ele, b.Text
+
+	lowStr := strings.ToLower(str)
+	e("li").R(
+		e("a", "href", "/"+lowStr).R(
+			t(str),
+		),
+	)
+
+	return b.String()
 }

@@ -16,7 +16,7 @@ func loginForm(s *rweb.Server) {
 
 		e("html").R(
 			t("TODO - FIX"),
-			t(PageLayout(RegisterMenu, "")),
+			t(PageLayout(MenuProvider(strRegister, strLogin, strDeleteUser), "")),
 			e("div").R(
 				e("form", "action", "/login", "method", "POST").R(
 					e("label", "for", "username").R(t("Username:")),
@@ -38,12 +38,12 @@ func loginForm(s *rweb.Server) {
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
 		if password == "" || username == "" {
-			return errorHandler(ctx, "Login Failed: You must enter a password", RegisterMenu)
+			return errorHandler(ctx, "Login Failed: You must enter a password", MenuProvider(strRegister, strLogin, strDeleteUser))
 		}
 		err = login.Login(username, password)
 		if err != nil {
-			return errorHandler(ctx, "Login Failed:"+err.Error(), RegisterMenu)
+			return errorHandler(ctx, "Login Failed:"+err.Error(), MenuProvider(strRegister, strLogin, strDeleteUser))
 		}
-		return successHandler(ctx, "Welcome to your Journals!", JournalMenu)
+		return successHandler(ctx, "Welcome to your Journals!", MenuProvider(strMyJournal, strLogout))
 	})
 }
