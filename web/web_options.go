@@ -14,12 +14,12 @@ var strLogout = "Logout"
 
 func MenuProvider(items ...string) MenuFunc {
 	return func() string {
-		return Menu(items...)
+		b := element.NewBuilder()
+		return Menu(b, items...)
 	}
 }
 
-func Menu(str ...string) string {
-	b := element.NewBuilder()
+func Menu(b *element.Builder, str ...string) string {
 	e, t := b.Ele, b.Text
 
 	e("div", "id", "menu-container").R(
