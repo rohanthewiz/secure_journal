@@ -29,5 +29,5 @@ func RegisterGETHandler(ctx rweb.Context) (err error) {
 		),
 	)
 
-	return ctx.WriteHTML(PageLayout(RegisterMenu, b.String()))
+	return ctx.WriteHTML(PageLayout(MenuProvider(strRegister, strLogin, strDeleteUser), b.String()))
 }
