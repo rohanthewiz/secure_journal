@@ -17,6 +17,6 @@ func firstJournal(s *rweb.Server) {
 				t("I can do all things through christ who strengthens me!"),
 			),
 		)
-		return ctx.WriteHTML(PageLayout(noMenu, b.String()))
+		return ctx.WriteHTML(PageLayout(MenuProvider(), b.String()))
 	})
 }
