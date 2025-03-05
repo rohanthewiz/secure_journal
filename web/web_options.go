@@ -1,8 +1,9 @@
 package web
 
 import (
-	"github.com/rohanthewiz/element"
 	"strings"
+
+	"github.com/rohanthewiz/element"
 )
 
 // List of strings for the menus
@@ -12,14 +13,15 @@ var strDeleteUser = "Delete-User"
 var strMyJournal = "My-Journals"
 var strLogout = "Logout"
 
-func MenuProvider(items ...string) MenuFunc {
+/*func MenuProvider(b *element.Builder, items ...string) MenuFunc {
 	return func() string {
 		b := element.NewBuilder()
 		return Menu(b, items...)
 	}
 }
+*/
 
-func Menu(b *element.Builder, str ...string) string {
+func Menu(b *element.Builder, str ...string) {
 	e, t := b.Ele, b.Text
 
 	e("div", "id", "menu-container").R(
@@ -75,8 +77,6 @@ func Menu(b *element.Builder, str ...string) string {
 			`),
 		),
 	)
-
-	return b.String()
 }
 
 func listCreate(str string) string {
