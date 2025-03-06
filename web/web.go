@@ -21,7 +21,7 @@ func InitWeb() (s *rweb.Server) {
 	s.Get("/", rootHandler)
 
 	registerRouter(s)
-	//get and post are within functions
+
 	loginRouter(s)
 
 	journalRouter(s)
