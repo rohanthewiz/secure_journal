@@ -3,9 +3,10 @@ package web
 import (
 	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
+	"secure_journal/login"
 )
 
-func loginForm(s *rweb.Server) {
+func loginRouter(s *rweb.Server) {
 	s.Get("/login", func(ctx rweb.Context) (err error) {
 		loginMenu := func(b *element.Builder, comps ...element.Component) {
 			Menu(b, strRegister, strDeleteUser)
@@ -13,20 +14,26 @@ func loginForm(s *rweb.Server) {
 		return ctx.WriteHTML(PgLayout(loginMenu, LoginTitle, LoginPageBody))
 	})
 
-	/*	// TODO - Let's work on this one so it uses element.Component
-		s.Post("/login", func(ctx rweb.Context) (err error) {
-			password := ctx.Request().FormValue("password")
-			username := ctx.Request().FormValue("username")
-			if password == "" || username == "" {
-				return errorHandler(ctx, "Login Failed: You must enter a password", MenuProvider(strRegister, strDeleteUser))
-			}
-			err = login.Login(username, password)
-			if err != nil {
-				return errorHandler(ctx, "Login Failed:"+err.Error(), MenuProvider(strRegister, strDeleteUser))
-			}
-			return successHandler(ctx, "Welcome to your Journals!", MenuProvider(strMyJournal, strLogout))
-		})
-	*/
+	// TODO - Let's work on this one so it uses element.Component
+	s.Post("/login", func(ctx rweb.Context) (err error) {
+		successMenu := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strMyJournal, strLogout)
+		}
+		errorMenu := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strRegister, strDeleteUser)
+		}
+		password := ctx.Request().FormValue("password")
+		username := ctx.Request().FormValue("username")
+		if password == "" || username == "" {
+			return errorHandler(ctx, "Login Failed: You must enter a password", errorMenu)
+		}
+		err = login.Login(username, password)
+		if err != nil {
+			return errorHandler(ctx, "Login Failed:"+err.Error(), errorMenu)
+		}
+		return successHandler(ctx, "Welcome to your Journals!", successMenu)
+	})
+
 }
 
 // LoginTitle is an example of an Element Component

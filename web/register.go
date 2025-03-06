@@ -3,11 +3,44 @@ package web
 import (
 	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
+	"secure_journal/login"
 )
 
+func registerRouter(s *rweb.Server) {
+
+	s.Get("/register", func(ctx rweb.Context) (err error) {
+		registerMenu := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strLogin, strDeleteUser)
+		}
+		return ctx.WriteHTML(PgLayout(registerMenu, RegisterGETHandler))
+	})
+
+	s.Post("/register", func(ctx rweb.Context) (err error) {
+		successMenu := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strMyJournal, strLogout)
+		}
+		errorMenu := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strRegister, strDeleteUser)
+		}
+
+		password := ctx.Request().FormValue("password")
+		username := ctx.Request().FormValue("username")
+		confirm_password := ctx.Request().FormValue("confirm_password")
+
+		if password != confirm_password {
+			return errorHandler(ctx, "Registration failed: Passwords don't match!", errorMenu)
+		}
+		err = login.Register(username, password)
+		if err != nil {
+			return errorHandler(ctx, "Registration failed:"+err.Error(), errorMenu)
+		}
+
+		return successHandler(ctx, "Registration Successful!", successMenu)
+	})
+}
+
 // This function has been fixed
-func RegisterGETHandler(ctx rweb.Context) (err error) {
-	b := element.NewBuilder()
+func RegisterGETHandler(b *element.Builder, comp ...element.Component) {
 	e := b.Ele
 	t := b.Text
 
@@ -29,5 +62,4 @@ func RegisterGETHandler(ctx rweb.Context) (err error) {
 		),
 	)
 
-	return ctx.WriteHTML(PageLayout(MenuProvider(strRegister, strLogin, strDeleteUser), b.String()))
 }

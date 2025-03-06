@@ -5,7 +5,7 @@ import (
 	"github.com/rohanthewiz/rweb"
 )
 
-func errorHandler(ctx rweb.Context, errorMessage string, menufunc MenuFunc) error {
+func errorHandler(ctx rweb.Context, errorMessage string, menufunc ...element.Component) error {
 	b := element.NewBuilder()
 	e := b.Ele
 	t := b.Text
@@ -24,7 +24,7 @@ func errorHandler(ctx rweb.Context, errorMessage string, menufunc MenuFunc) erro
 				t(`<h1><a href="/" style="text-decoration: none; color: inherit;">My Journal</a></h1>`),
 			),
 			e("div").R(
-				t(menufunc()),
+				menufunc,
 			),
 			e("div").R(
 				e("p", "style", "color: red").R(
