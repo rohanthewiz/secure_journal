@@ -20,17 +20,14 @@ func loginRouter(s *rweb.Server) {
 		successMenu := func(b *element.Builder, comps ...element.Component) {
 			Menu(b, strMyJournal, strLogout)
 		}
-		errorMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strRegister, strDeleteUser)
-		}
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
 		if password == "" || username == "" {
-			return errorHandler(ctx, "Login Failed: You must enter a password", errorMenu)
+			return errorHandler(ctx, "Login Failed: You must enter a password and username")
 		}
 		err = login.Login(username, password)
 		if err != nil {
-			return errorHandler(ctx, "Login Failed:"+err.Error(), errorMenu)
+			return errorHandler(ctx, "Login Failed:"+err.Error())
 		}
 		return successHandler(ctx, "Welcome to your Journals!", successMenu)
 	})
@@ -43,8 +40,8 @@ func LoginTitle(b *element.Builder, _ ...element.Component) {
 
 	e("h1").R(
 		t(`<h1><a href="/" style="text-decoration: none; color: inherit;">My Journal</a></h1>`),
-		// element.RenderComponents(b, comps...),
 	)
+	element.RenderComponents(b)
 }
 
 // LoginPageBody is an example of an Element Component

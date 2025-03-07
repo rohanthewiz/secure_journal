@@ -5,7 +5,7 @@ import (
 	"github.com/rohanthewiz/rweb"
 )
 
-func errorHandler(ctx rweb.Context, errorMessage string) error {
+func errorHandler(ctx rweb.Context, errorMessage string, _ ...element.Component) error {
 	b := element.NewBuilder()
 	e := b.Ele
 	t := b.Text

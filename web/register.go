@@ -19,20 +19,20 @@ func registerRouter(s *rweb.Server) {
 		successMenu := func(b *element.Builder, comps ...element.Component) {
 			Menu(b, strMyJournal, strLogout)
 		}
-		errorMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strRegister, strDeleteUser)
-		}
-
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
 		confirm_password := ctx.Request().FormValue("confirm_password")
 
-		if password != confirm_password {
-			return errorHandler(ctx, "Registration failed: Passwords don't match!", errorMenu)
+		if username == "" || password == "" || confirm_password == "" {
+			return errorHandler(ctx, "You must fill out all boxes!")
 		}
+		if password != confirm_password {
+			return errorHandler(ctx, "Registration failed: Passwords don't match!")
+		}
+
 		err = login.Register(username, password)
 		if err != nil {
-			return errorHandler(ctx, "Registration failed:"+err.Error(), errorMenu)
+			return errorHandler(ctx, "Registration failed:"+err.Error())
 		}
 
 		return successHandler(ctx, "Registration Successful!", successMenu)
