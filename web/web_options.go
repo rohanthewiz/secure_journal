@@ -13,14 +13,6 @@ var strDeleteUser = "Delete-User"
 var strMyJournal = "My-Journals"
 var strLogout = "Logout"
 
-/*func MenuProvider(b *element.Builder, items ...string) MenuFunc {
-	return func() string {
-		b := element.NewBuilder()
-		return Menu(b, items...)
-	}
-}
-*/
-
 func Menu(b *element.Builder, str ...string) {
 	e, t := b.Ele, b.Text
 
