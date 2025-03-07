@@ -1,9 +1,10 @@
 package web
 
 import (
+	"secure_journal/login"
+
 	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
-	"secure_journal/login"
 )
 
 func loginRouter(s *rweb.Server) {
@@ -37,11 +38,12 @@ func loginRouter(s *rweb.Server) {
 }
 
 // LoginTitle is an example of an Element Component
-func LoginTitle(b *element.Builder, comps ...element.Component) {
+func LoginTitle(b *element.Builder, _ ...element.Component) {
 	e, t := b.Ele, b.Text
 
 	e("h1").R(
 		t(`<h1><a href="/" style="text-decoration: none; color: inherit;">My Journal</a></h1>`),
+		// element.RenderComponents(b, comps...),
 	)
 }
 

@@ -19,12 +19,7 @@ func PgLayout(comps ...element.Component) string {
 			),
 		),
 		e("body").R(
-			func() (x any) {
-				for _, comp := range comps {
-					comp(b)
-				}
-				return
-			}(),
+			element.RenderComponents(b, comps...),
 		),
 	)
 	// Return the whole page
