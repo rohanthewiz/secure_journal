@@ -62,11 +62,6 @@ func LoginPageBody(b *element.Builder, comps ...element.Component) {
 		),
 
 		// We _could_ render out other comps wherever, if ever, we want
-		func() (x any) {
-			for _, comp := range comps {
-				comp(b)
-			}
-			return
-		}(),
+		element.RenderComponents(b),
 	)
 }

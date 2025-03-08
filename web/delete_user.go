@@ -15,15 +15,27 @@ func DeleteRouter(s *rweb.Server) {
 	})
 
 	s.Post("/delete-user", func(ctx rweb.Context) (err error) {
+		username := ctx.Request().FormValue("username")
+		password := ctx.Request().FormValue("password")
+		var str string
+
 		successMenu := func(b *element.Builder, comps ...element.Component) {
 			Menu(b, strMyJournal, strLogout)
 		}
-		username := ctx.Request().FormValue("username")
-		password := ctx.Request().FormValue("password")
+		errorBody := func(b *element.Builder, comps ...element.Component) {
+			errHandler(b, str)
+		}
+
+		if username == "" || password == "" {
+			str = "You must type username && password"
+			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
+		}
+
 		err = login.Delete(username, password)
 
 		if err != nil {
-			return errorHandler(ctx, "Username doesnt exist")
+			str = "username does not exist!" + err.Error()
+			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
 		}
 
 		return successHandler(ctx, "Deletion Successful!", successMenu)
