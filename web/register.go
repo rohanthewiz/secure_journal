@@ -16,26 +16,36 @@ func registerRouter(s *rweb.Server) {
 	})
 
 	s.Post("/register", func(ctx rweb.Context) (err error) {
-		successMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strMyJournal, strLogout)
-		}
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
 		confirm_password := ctx.Request().FormValue("confirm_password")
+		var str string
+
+		successMenu := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strLogin, strDeleteUser)
+			successHandler(b, str)
+		}
+		errorBody := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strLogin, strDeleteUser)
+			errHandler(b, str)
+		}
 
 		if username == "" || password == "" || confirm_password == "" {
-			return errorHandler(ctx, "You must fill out all boxes!")
+			str = "You must have a username and password"
+			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
 		}
 		if password != confirm_password {
-			return errorHandler(ctx, "Registration failed: Passwords don't match!")
+			str = "Your passwords do not match!"
+			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
 		}
 
 		err = login.Register(username, password)
 		if err != nil {
-			return errorHandler(ctx, "Registration failed:"+err.Error())
+			str = "Registration failed:" + err.Error()
+			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
 		}
-
-		return successHandler(ctx, "Registration Successful!", successMenu)
+		str = "Registration successful!"
+		return ctx.WriteHTML(PgLayout(LoginTitle, successMenu))
 	})
 }
 

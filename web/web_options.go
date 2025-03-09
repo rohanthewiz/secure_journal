@@ -42,9 +42,14 @@ func Menu(b *element.Builder, str ...string) {
 				}
 			`),
 		),
-		e("button", "class", "toggle-button", "onclick", "toggleMenuLayout()").R(
-			t("Toggle Layout"),
-		),
+		func() any {
+			if len(str) > 1 {
+				return e("button", "class", "toggle-button", "onclick", "toggleMenuLayout()").R(
+					t("Toggle Layout"),
+				)
+			}
+			return nil
+		}(),
 		e("ul", "id", "menu", "class", "horizontal").R(
 			func() []any {
 				var items []any

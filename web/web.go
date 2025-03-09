@@ -32,7 +32,7 @@ func InitWeb() (s *rweb.Server) {
 
 	DeleteRouter(s)
 
-	s.Get("/log-out", func(ctx rweb.Context) (err error) {
+	s.Get("/logout", func(ctx rweb.Context) (err error) {
 		return rootHandler(ctx)
 	})
 

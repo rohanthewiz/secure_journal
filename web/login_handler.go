@@ -17,19 +17,30 @@ func loginRouter(s *rweb.Server) {
 
 	// TODO - Let's work on this one so it uses element.Component
 	s.Post("/login", func(ctx rweb.Context) (err error) {
-		successMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strMyJournal, strLogout)
-		}
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
+		var str string
+
+		successMenu := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strMyJournal, strLogout)
+			successHandler(b, str)
+		}
+		errorBody := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strRegister, strLogin, strDeleteUser)
+			errHandler(b, str)
+		}
+
 		if password == "" || username == "" {
-			return errorHandler(ctx, "Login Failed: You must enter a password and username")
+			str = "You must have a username and password"
+			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
 		}
 		err = login.Login(username, password)
 		if err != nil {
-			return errorHandler(ctx, "Login Failed:"+err.Error())
+			str = "Login gailed" + err.Error()
+			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
 		}
-		return successHandler(ctx, "Welcome to your Journals!", successMenu)
+		str = "Login successful!"
+		return ctx.WriteHTML(PgLayout(LoginTitle, successMenu))
 	})
 
 }

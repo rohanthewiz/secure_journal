@@ -21,6 +21,7 @@ func DeleteRouter(s *rweb.Server) {
 
 		successMenu := func(b *element.Builder, comps ...element.Component) {
 			Menu(b, strMyJournal, strLogout)
+			successHandler(b, str)
 		}
 		errorBody := func(b *element.Builder, comps ...element.Component) {
 			errHandler(b, str)
@@ -38,7 +39,7 @@ func DeleteRouter(s *rweb.Server) {
 			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
 		}
 
-		return successHandler(ctx, "Deletion Successful!", successMenu)
+		return ctx.WriteHTML(PgLayout(LoginTitle, successMenu))
 	})
 }
 
