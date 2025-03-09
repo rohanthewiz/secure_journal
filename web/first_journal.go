@@ -8,7 +8,10 @@ import (
 func journalRouter(s *rweb.Server) {
 
 	s.Get("/my-journals", func(ctx rweb.Context) (err error) {
-		return ctx.WriteHTML(PgLayout(firstJournal))
+		journalMenu := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strLogout)
+		}
+		return ctx.WriteHTML(PgLayout(LoginTitle, journalMenu, firstJournal))
 	})
 }
 
