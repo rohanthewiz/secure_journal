@@ -1,6 +1,7 @@
 package web
 
 import (
+	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
 )
 
@@ -15,7 +16,10 @@ func InitWeb() (s *rweb.Server) {
 	)
 	// HANDLERS
 	rootHandler := func(ctx rweb.Context) error {
-		return ctx.WriteHTML(PgLayout())
+		rootMenu := func(b *element.Builder, comps ...element.Component) {
+			Menu(b, strRegister, strLogin, strDeleteUser)
+		}
+		return ctx.WriteHTML(PgLayout(rootMenu))
 	}
 
 	s.Get("/", rootHandler)
@@ -28,7 +32,7 @@ func InitWeb() (s *rweb.Server) {
 
 	DeleteRouter(s)
 
-	s.Get("/log-out", func(ctx rweb.Context) (err error) {
+	s.Get("/logout", func(ctx rweb.Context) (err error) {
 		return rootHandler(ctx)
 	})
 
