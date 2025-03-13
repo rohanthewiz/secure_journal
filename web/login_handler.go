@@ -9,10 +9,8 @@ import (
 
 func loginRouter(s *rweb.Server) {
 	s.Get("/login", func(ctx rweb.Context) (err error) {
-		loginMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strRegister, strDeleteUser)
-		}
-		return ctx.WriteHTML(PgLayout(loginMenu, LoginTitle, LoginPageBody))
+		loginMenu := PageMenu{Items: []string{strRegister, strDeleteUser}}
+		return ctx.WriteHTML(PgLayout(loginMenu, LoginPageBody{}))
 	})
 
 	// TODO - Let's work on this one so it uses element.Component
@@ -21,43 +19,74 @@ func loginRouter(s *rweb.Server) {
 		username := ctx.Request().FormValue("username")
 		var str string
 
-		successMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strMyJournal, strLogout)
-			successHandler(b, str)
-		}
-		errorBody := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strRegister, strLogin, strDeleteUser)
-			errHandler(b, str)
-		}
-
 		if password == "" || username == "" {
 			str = "You must have a username and password"
-			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
+			return ctx.WriteHTML(PgLayout(ErrorComp{Msg: str}))
 		}
+
 		err = login.Login(username, password)
 		if err != nil {
-			str = "Login gailed" + err.Error()
-			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
+			str = "Login failed" + err.Error()
+			return ctx.WriteHTML(PgLayout(ErrorComp{Msg: str}))
 		}
-		str = "Login successful!"
-		return ctx.WriteHTML(PgLayout(LoginTitle, successMenu))
+
+		return ctx.WriteHTML(PgLayout(SuccessComp{Msg: "Login successful!"}))
 	})
-
 }
 
-// LoginTitle is an example of an Element Component
-func LoginTitle(b *element.Builder, _ ...element.Component) {
-	e, t := b.Ele, b.Text
+// ===== COMPONENTS =====
+// You can put the components in different files
+// leaving here for clarity -- RA
 
-	e("h1").R(
-		t(`<h1><a href="/" style="text-decoration: none; color: inherit;">My Journal</a></h1>`),
+// ---- Success Component ----
+
+type SuccessComp struct {
+	Msg string
+}
+
+func (s SuccessComp) Render(b *element.Builder) (x any) {
+	e, t := b.Funcs()
+
+	menu := PageMenu{Items: []string{strMyJournal, strLogout}}
+	menu.Render(b)
+
+	e("div").R(
+		e("p", "style", "color: green").R(
+			t(s.Msg),
+		),
 	)
-	element.RenderComponents(b)
+	return
 }
 
-// LoginPageBody is an example of an Element Component
-func LoginPageBody(b *element.Builder, comps ...element.Component) {
-	e, t := b.Ele, b.Text
+// --- Error Component ---
+
+type ErrorComp struct {
+	Msg string
+}
+
+func (ec ErrorComp) Render(b *element.Builder) (x any) {
+	e, t := b.Funcs()
+
+	PageMenu{Items: []string{strRegister, strLogin, strDeleteUser}}.Render(b)
+
+	e("div").R(
+		e("p", "style", "color: red").R(
+			t(ec.Msg),
+		),
+		e("a", "href", "/delete-user").R(
+			t("Try again"),
+		),
+	)
+	return
+}
+
+// ---- Login Body Component ----
+
+// LoginPageBody defines the component for the body of the login page
+type LoginPageBody struct{}
+
+func (l LoginPageBody) Render(b *element.Builder) (x any) {
+	e, t := b.Funcs()
 
 	e("div").R(
 		e("form", "action", "/login", "method", "POST").R(
@@ -71,8 +100,6 @@ func LoginPageBody(b *element.Builder, comps ...element.Component) {
 			e("br"),
 			e("input", "type", "submit", "value", "Login"),
 		),
-
-		// We _could_ render out other comps wherever, if ever, we want
-		element.RenderComponents(b),
 	)
+	return
 }

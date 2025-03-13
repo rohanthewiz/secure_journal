@@ -7,18 +7,21 @@ import "github.com/rohanthewiz/element"
 // Element components should take in the builder from here
 func PgLayout(comps ...element.Component) string {
 	b := element.NewBuilder()
-	e, t := b.Ele, b.Text
+	e, t := b.Funcs()
+
+	appTitle := AppTitle{Text: "My Journal", Link: "/"}
 
 	e("html").R(
 		e("head").R(
 			e("title").R(
-				t("My Journal"),
+				t("My Journal - Tab title"),
 			),
 			e("style").R(
 				t("body {background-color: lightblue;} h1 a {text-decoration: none; color: inherit;}"),
 			),
 		),
 		e("body").R(
+			appTitle.Render(b), // The app title will be the same for all pages
 			element.RenderComponents(b, comps...),
 		),
 	)

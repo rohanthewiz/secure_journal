@@ -13,8 +13,12 @@ var strDeleteUser = "Delete-User"
 var strMyJournal = "My-Journals"
 var strLogout = "Logout"
 
-func Menu(b *element.Builder, str ...string) {
-	e, t := b.Ele, b.Text
+type PageMenu struct {
+	Items []string
+}
+
+func (m PageMenu) Render(b *element.Builder) (x any) {
+	e, t := b.Funcs()
 
 	e("div", "id", "menu-container").R(
 		e("style").R(
@@ -43,7 +47,7 @@ func Menu(b *element.Builder, str ...string) {
 			`),
 		),
 		func() any {
-			if len(str) > 1 {
+			if len(m.Items) > 1 {
 				return e("button", "class", "toggle-button", "onclick", "toggleMenuLayout()").R(
 					t("Toggle Layout"),
 				)
@@ -53,7 +57,7 @@ func Menu(b *element.Builder, str ...string) {
 		e("ul", "id", "menu", "class", "horizontal").R(
 			func() []any {
 				var items []any
-				for _, ele := range str {
+				for _, ele := range m.Items {
 					items = append(items, t(listCreate(ele)))
 				}
 				return items
@@ -74,7 +78,12 @@ func Menu(b *element.Builder, str ...string) {
 			`),
 		),
 	)
+	return
 }
+
+/*func Menu(b *element.Builder, str ...string) {
+}
+*/
 
 func listCreate(str string) string {
 	b := element.NewBuilder()
