@@ -8,42 +8,31 @@ import (
 
 func DeleteRouter(s *rweb.Server) {
 	s.Get("/delete-user", func(ctx rweb.Context) (err error) {
-		deleteUserMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strRegister, strLogin)
-		}
-		return ctx.WriteHTML(PgLayout(deleteUserMenu, DeleteUserForm))
+		deleteUserMenu := PageMenu{Items: []string{strLogin, strRegister}}
+		return ctx.WriteHTML(PgLayout(deleteUserMenu, DeleteUserForm{}))
 	})
 
 	s.Post("/delete-user", func(ctx rweb.Context) (err error) {
 		username := ctx.Request().FormValue("username")
 		password := ctx.Request().FormValue("password")
-		var str string
-
-		successMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strMyJournal, strLogout)
-			successHandler(b, str)
-		}
-		errorBody := func(b *element.Builder, comps ...element.Component) {
-			errHandler(b, str)
-		}
 
 		if username == "" || password == "" {
-			str = "You must type username && password"
-			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
+			return ctx.WriteHTML(PgLayout(ErrorComp{"You must type username && password"}))
 		}
 
 		err = login.Delete(username, password)
 
 		if err != nil {
-			str = "username does not exist!" + err.Error()
-			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
+			return ctx.WriteHTML(PgLayout(ErrorComp{"username does not exist!"}))
 		}
 
-		return ctx.WriteHTML(PgLayout(LoginTitle, successMenu))
+		return ctx.WriteHTML(PgLayout(SuccessComp{"User Deleted!"}))
 	})
 }
 
-func DeleteUserForm(b *element.Builder, comps ...element.Component) {
+type DeleteUserForm struct{}
+
+func (d DeleteUserForm) Render(b *element.Builder) (x any) {
 	e := b.Ele
 	t := b.Text
 	e("div").R(
@@ -59,4 +48,5 @@ func DeleteUserForm(b *element.Builder, comps ...element.Component) {
 			e("input", "type", "submit", "value", "Delete"),
 		),
 	)
+	return
 }
