@@ -9,48 +9,34 @@ import (
 func registerRouter(s *rweb.Server) {
 
 	s.Get("/register", func(ctx rweb.Context) (err error) {
-		registerMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strLogin, strDeleteUser)
-		}
-		return ctx.WriteHTML(PgLayout(registerMenu, RegisterGETHandler))
+		registerMenu := PageMenu{Items: []string{strLogin, strDeleteUser}}
+		return ctx.WriteHTML(PgLayout(registerMenu, RegisterForm{}))
 	})
 
 	s.Post("/register", func(ctx rweb.Context) (err error) {
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
 		confirm_password := ctx.Request().FormValue("confirm_password")
-		var str string
-
-		successMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strLogin, strDeleteUser)
-			successHandler(b, str)
-		}
-		errorBody := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strLogin, strDeleteUser)
-			errHandler(b, str)
-		}
 
 		if username == "" || password == "" || confirm_password == "" {
-			str = "You must have a username and password"
-			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
+			return ctx.WriteHTML(PgLayout(ErrorComp{"You must have a username and password"}))
 		}
 		if password != confirm_password {
-			str = "Your passwords do not match!"
-			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
+			return ctx.WriteHTML(PgLayout(ErrorComp{"Your passwords do not match!"}))
 		}
 
 		err = login.Register(username, password)
 		if err != nil {
-			str = "Registration failed:" + err.Error()
-			return ctx.WriteHTML(PgLayout(LoginTitle, errorBody))
+			return ctx.WriteHTML(PgLayout(ErrorComp{"Registration failed:" + err.Error()}))
 		}
-		str = "Registration successful!"
-		return ctx.WriteHTML(PgLayout(LoginTitle, successMenu))
+		return ctx.WriteHTML(PgLayout(SuccessComp{"Registration successful!"}))
 	})
 }
 
+type RegisterForm struct{}
+
 // This function has been fixed
-func RegisterGETHandler(b *element.Builder, comp ...element.Component) {
+func (r RegisterForm) Render(b *element.Builder) (x any) {
 	e := b.Ele
 	t := b.Text
 
@@ -71,5 +57,5 @@ func RegisterGETHandler(b *element.Builder, comp ...element.Component) {
 			e("input", "type", "submit", "value", "Register"),
 		),
 	)
-
+	return
 }
