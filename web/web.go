@@ -1,7 +1,6 @@
 package web
 
 import (
-	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
 )
 
@@ -16,9 +15,7 @@ func InitWeb() (s *rweb.Server) {
 	)
 	// HANDLERS
 	rootHandler := func(ctx rweb.Context) error {
-		rootMenu := func(b *element.Builder, comps ...element.Component) {
-			Menu(b, strRegister, strLogin, strDeleteUser)
-		}
+		rootMenu := PageMenu{Items: []string{strRegister, strLogin, strDeleteUser}}
 		return ctx.WriteHTML(PgLayout(rootMenu))
 	}
 
@@ -29,6 +26,8 @@ func InitWeb() (s *rweb.Server) {
 	loginRouter(s)
 
 	journalRouter(s)
+
+	tableRouter(s)
 
 	DeleteRouter(s)
 

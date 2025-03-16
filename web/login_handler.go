@@ -13,7 +13,6 @@ func loginRouter(s *rweb.Server) {
 		return ctx.WriteHTML(PgLayout(loginMenu, LoginPageBody{}))
 	})
 
-	// TODO - Let's work on this one so it uses element.Component
 	s.Post("/login", func(ctx rweb.Context) (err error) {
 		password := ctx.Request().FormValue("password")
 		username := ctx.Request().FormValue("username")
@@ -33,54 +32,6 @@ func loginRouter(s *rweb.Server) {
 		return ctx.WriteHTML(PgLayout(SuccessComp{Msg: "Login successful!"}))
 	})
 }
-
-// ===== COMPONENTS =====
-// You can put the components in different files
-// leaving here for clarity -- RA
-
-// ---- Success Component ----
-
-type SuccessComp struct {
-	Msg string
-}
-
-func (s SuccessComp) Render(b *element.Builder) (x any) {
-	e, t := b.Funcs()
-
-	menu := PageMenu{Items: []string{strMyJournal, strLogout}}
-	menu.Render(b)
-
-	e("div").R(
-		e("p", "style", "color: green").R(
-			t(s.Msg),
-		),
-	)
-	return
-}
-
-// --- Error Component ---
-
-type ErrorComp struct {
-	Msg string
-}
-
-func (ec ErrorComp) Render(b *element.Builder) (x any) {
-	e, t := b.Funcs()
-
-	PageMenu{Items: []string{strRegister, strLogin, strDeleteUser}}.Render(b)
-
-	e("div").R(
-		e("p", "style", "color: red").R(
-			t(ec.Msg),
-		),
-		e("a", "href", "/delete-user").R(
-			t("Try again"),
-		),
-	)
-	return
-}
-
-// ---- Login Body Component ----
 
 // LoginPageBody defines the component for the body of the login page
 type LoginPageBody struct{}
