@@ -27,6 +27,8 @@ func InitWeb() (s *rweb.Server) {
 
 	journalRouter(s)
 
+	tableRouter(s)
+
 	DeleteRouter(s)
 
 	s.Get("/logout", func(ctx rweb.Context) (err error) {
