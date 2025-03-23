@@ -7,12 +7,16 @@ import (
 )
 
 func main() {
-	err := login.InitDB("users.duck")
+	// Initialize the database and get the connection
+	db, err := login.InitDB("users.duck")
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
-	defer login.CloseDB()
+	defer db.Close() // Use db.Close() instead of login.CloseDB()
 
-	s := web.InitWeb()
+	// Pass the database to InitWeb
+	s := web.InitWeb(db)
+
+	// Start the server
 	log.Println(s.Run())
 }

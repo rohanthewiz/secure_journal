@@ -1,11 +1,12 @@
 package web
 
 import (
+	"database/sql"
 	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
 )
 
-func tableRouter(s *rweb.Server) {
+func tableRouter(s *rweb.Server, db *sql.DB) {
 	s.Get("/table", func(ctx rweb.Context) error {
 		tableMenu := PageMenu{Items: []string{strLogout}}
 		return ctx.WriteHTML(PgLayout(tableMenu, Table{Borders: true}))

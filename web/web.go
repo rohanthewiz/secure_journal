@@ -1,12 +1,13 @@
 package web
 
 import (
+	"database/sql"
 	"github.com/rohanthewiz/rweb"
 )
 
 type MenuFunc func() string
 
-func InitWeb() (s *rweb.Server) {
+func InitWeb(db *sql.DB) (s *rweb.Server) {
 	s = rweb.NewServer(
 		rweb.ServerOptions{
 			Address: "localhost:8000",
@@ -21,15 +22,15 @@ func InitWeb() (s *rweb.Server) {
 
 	s.Get("/", rootHandler)
 
-	registerRouter(s)
+	registerRouter(s, db)
 
-	loginRouter(s)
+	loginRouter(s, db)
 
-	journalRouter(s)
+	journalRouter(s, db)
 
-	tableRouter(s)
+	tableRouter(s, db)
 
-	DeleteRouter(s)
+	DeleteRouter(s, db)
 
 	s.Get("/logout", func(ctx rweb.Context) (err error) {
 		return rootHandler(ctx)

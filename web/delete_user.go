@@ -1,12 +1,13 @@
 package web
 
 import (
+	"database/sql"
 	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
 	"secure_journal/login"
 )
 
-func DeleteRouter(s *rweb.Server) {
+func DeleteRouter(s *rweb.Server, db *sql.DB) {
 	s.Get("/delete-user", func(ctx rweb.Context) (err error) {
 		deleteUserMenu := PageMenu{Items: []string{strLogin, strRegister}}
 		return ctx.WriteHTML(PgLayout(deleteUserMenu, DeleteUserForm{}))
@@ -20,7 +21,7 @@ func DeleteRouter(s *rweb.Server) {
 			return ctx.WriteHTML(PgLayout(ErrorComp{"You must type username && password"}))
 		}
 
-		err = login.Delete(username, password)
+		err = login.Delete(db, username, password)
 
 		if err != nil {
 			return ctx.WriteHTML(PgLayout(ErrorComp{"username does not exist!"}))

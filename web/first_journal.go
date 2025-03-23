@@ -1,6 +1,7 @@
 package web
 
 import (
+	"database/sql"
 	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
 )
@@ -15,7 +16,7 @@ import (
 // 	})
 // }
 
-func journalRouter(s *rweb.Server) {
+func journalRouter(s *rweb.Server, db *sql.DB) {
 
 	s.Get("/my-journals", func(ctx rweb.Context) (err error) {
 		journalMenu := PageMenu{Items: []string{strMyJournal, strLogout}}

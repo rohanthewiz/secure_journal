@@ -48,7 +48,7 @@ func (m PageMenu) Render(b *element.Builder) (x any) {
 		),
 		func() any {
 			if len(m.Items) > 1 {
-				return e("button", "class", "toggle-button", "onclick", "toggleMenuLayout()").R(
+				return e("button", "class", "toggle-button", "style", "font-size:12px;padding:2px 4px;", "onclick", "toggleMenuLayout()").R(
 					t("Toggle Layout"),
 				)
 			}
