@@ -36,25 +36,25 @@ func (m PageMenu) Render(b *element.Builder) (x any) {
 					margin-right: 15px;
 					margin-bottom: 0;
 				}
-				.vertical li {
-					display: block;
+				.empty-menu li {
+					display: none;
 				}
 				.toggle-button {
 					margin-bottom: 10px;
-					padding: 5px 10px;
+					padding: 2px 6px;
 					cursor: pointer;
 				}
 			`),
 		),
 		func() any {
 			if len(m.Items) > 1 {
-				return e("button", "class", "toggle-button", "style", "font-size:12px;padding:2px 4px;", "onclick", "toggleMenuLayout()").R(
-					t("Toggle Layout"),
+				return e("button", "id", "toggle-button", "class", "toggle-button", "style", "font-size:12px;", "onclick", "toggleMenu()").R(
+					t("+ Menu"),
 				)
 			}
 			return nil
 		}(),
-		e("ul", "id", "menu", "class", "horizontal").R(
+		e("ul", "id", "menu", "class", "empty-menu").R(
 			func() []any {
 				var items []any
 				for _, ele := range m.Items {
@@ -65,15 +65,19 @@ func (m PageMenu) Render(b *element.Builder) (x any) {
 		),
 		e("script").R(
 			t(`
-				function toggleMenuLayout() {
+				function toggleMenu() {
 					const menu = document.getElementById('menu');
+          const button = document.getElementById('toggle-button')
 					if (menu.classList.contains('horizontal')) {
 						menu.classList.remove('horizontal');
-						menu.classList.add('vertical');
+						menu.classList.add('empty-menu');
+            button.innerHTML = "+ Menu";
 					} else {
-						menu.classList.remove('vertical');
+						menu.classList.remove('empty-menu');
 						menu.classList.add('horizontal');
+            button.innerHTML = "Menu &#215;";
 					}
+          console.log('Button text is now:', button.innerHTML);
 				}
 			`),
 		),
