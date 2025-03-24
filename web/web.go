@@ -26,9 +26,9 @@ func InitWeb(db *sql.DB) (s *rweb.Server) {
 
 	loginRouter(s, db)
 
-	journalRouter(s, db)
+	journalRouter(s)
 
-	tableRouter(s, db)
+	tableRouter(s)
 
 	DeleteRouter(s, db)
 
