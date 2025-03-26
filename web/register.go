@@ -7,7 +7,7 @@ import (
 	"secure_journal/login"
 )
 
-func registerRouter(s *rweb.Server, db *sql.DB) {
+func registerHandler(s *rweb.Server, db *sql.DB) {
 
 	s.Get("/register", func(ctx rweb.Context) (err error) {
 		registerMenu := PageMenu{Items: []string{strLogin, strDeleteUser}}

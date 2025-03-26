@@ -22,15 +22,15 @@ func InitWeb(db *sql.DB) (s *rweb.Server) {
 
 	s.Get("/", rootHandler)
 
-	registerRouter(s, db)
+	registerHandler(s, db)
 
-	loginRouter(s, db)
+	loginHandler(s, db)
 
-	journalRouter(s)
+	journalHandler(s)
 
-	tableRouter(s)
+	tableHandler(s)
 
-	DeleteRouter(s, db)
+	DeleteHandler(s, db)
 
 	s.Get("/logout", func(ctx rweb.Context) (err error) {
 		return rootHandler(ctx)

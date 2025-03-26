@@ -5,7 +5,7 @@ import (
 	"github.com/rohanthewiz/rweb"
 )
 
-func tableRouter(s *rweb.Server) {
+func tableHandler(s *rweb.Server) {
 	s.Get("/table", func(ctx rweb.Context) error {
 		tableMenu := PageMenu{Items: []string{strLogout}}
 		return ctx.WriteHTML(PgLayout(tableMenu, Table{Borders: true}))

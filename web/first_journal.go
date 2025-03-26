@@ -5,7 +5,7 @@ import (
 	"github.com/rohanthewiz/rweb"
 )
 
-func journalRouter(s *rweb.Server) {
+func journalHandler(s *rweb.Server) {
 
 	s.Get("/my-journals", func(ctx rweb.Context) (err error) {
 		journalMenu := PageMenu{Items: []string{strMyJournal, strLogout}}

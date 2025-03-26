@@ -8,7 +8,7 @@ import (
 	"github.com/rohanthewiz/rweb"
 )
 
-func loginRouter(s *rweb.Server, db *sql.DB) {
+func loginHandler(s *rweb.Server, db *sql.DB) {
 	s.Get("/login", func(ctx rweb.Context) (err error) {
 		loginMenu := PageMenu{Items: []string{strRegister, strDeleteUser}}
 		return ctx.WriteHTML(PgLayout(loginMenu, LoginPageBody{}))

@@ -7,7 +7,7 @@ import (
 	"secure_journal/login"
 )
 
-func DeleteRouter(s *rweb.Server, db *sql.DB) {
+func DeleteHandler(s *rweb.Server, db *sql.DB) {
 	s.Get("/delete-user", func(ctx rweb.Context) (err error) {
 		deleteUserMenu := PageMenu{Items: []string{strLogin, strRegister}}
 		return ctx.WriteHTML(PgLayout(deleteUserMenu, DeleteUserForm{}))
