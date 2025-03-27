@@ -117,6 +117,32 @@ func Delete(db *sql.DB, username string, password string) error {
 	return nil
 }
 
+// Table retrieves all usernames from the database
+func Table(db *sql.DB) ([]string, error) {
+	// Query to fetch all usernames
+	rows, err := db.Query("SELECT username FROM users")
+	if err != nil {
+		return nil, fmt.Errorf("failed to query users: %w", err)
+	}
+	defer rows.Close()
+
+	var usernames []string
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, fmt.Errorf("error scanning username: %w", err)
+		}
+		usernames = append(usernames, username)
+	}
+
+	// Check for any errors encountered during iteration
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating users: %w", err)
+	}
+
+	return usernames, nil
+}
+
 // Hash password using bcrypt
 func HashPassword(password string) (string, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

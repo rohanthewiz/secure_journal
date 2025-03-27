@@ -11,7 +11,7 @@ func (tl *AppTitle) Render(b *element.Builder) (x any) {
 	e, t := b.Funcs()
 
 	e("h1").R(
-		e("a", "href", "style", "text-decoration: none; color: inherit", tl.Link).R(
+		e("a", "href", tl.Link, "style", "text-decoration: none; color: inherit").R(
 			t(tl.Text),
 		),
 	)

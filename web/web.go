@@ -16,7 +16,7 @@ func InitWeb(db *sql.DB) (s *rweb.Server) {
 	)
 	// HANDLERS
 	rootHandler := func(ctx rweb.Context) error {
-		rootMenu := PageMenu{Items: []string{strRegister, strLogin, strDeleteUser}}
+		rootMenu := PageMenu{Items: []string{strRegister, strLogin, strDeleteUser, strTable}}
 		return ctx.WriteHTML(PgLayout(rootMenu))
 	}
 
@@ -28,7 +28,7 @@ func InitWeb(db *sql.DB) (s *rweb.Server) {
 
 	journalHandler(s)
 
-	tableHandler(s)
+	tableHandler(s, db)
 
 	DeleteHandler(s, db)
 

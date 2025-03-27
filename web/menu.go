@@ -12,6 +12,7 @@ var strLogin = "Login"
 var strDeleteUser = "Delete-User"
 var strMyJournal = "My-Journals"
 var strLogout = "Logout"
+var strTable = "Table"
 
 type PageMenu struct {
 	Items []string
