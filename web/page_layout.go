@@ -17,7 +17,7 @@ func PgLayout(comps ...element.Component) string {
 				t("My Journal - Tab title"),
 			),
 			e("style").R(
-				t("body {background-color: lightblue;} h1 a {text-decoration: none; color: inherit;}"),
+				t("body {background-color: slategrey;} h1 a {text-decoration: none; color: inherit;}"),
 			),
 		),
 		e("body").R(

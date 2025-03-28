@@ -1,12 +1,13 @@
 package web
 
 import (
+	"database/sql"
 	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
 	"secure_journal/login"
 )
 
-func registerRouter(s *rweb.Server) {
+func registerHandler(s *rweb.Server, db *sql.DB) {
 
 	s.Get("/register", func(ctx rweb.Context) (err error) {
 		registerMenu := PageMenu{Items: []string{strLogin, strDeleteUser}}
@@ -25,7 +26,7 @@ func registerRouter(s *rweb.Server) {
 			return ctx.WriteHTML(PgLayout(ErrorComp{"Your passwords do not match!"}))
 		}
 
-		err = login.Register(username, password)
+		err = login.Register(db, username, password)
 		if err != nil {
 			return ctx.WriteHTML(PgLayout(ErrorComp{"Registration failed:" + err.Error()}))
 		}

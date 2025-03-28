@@ -3,11 +3,12 @@ package web
 import (
 	"secure_journal/login"
 
+	"database/sql"
 	"github.com/rohanthewiz/element"
 	"github.com/rohanthewiz/rweb"
 )
 
-func loginRouter(s *rweb.Server) {
+func loginHandler(s *rweb.Server, db *sql.DB) {
 	s.Get("/login", func(ctx rweb.Context) (err error) {
 		loginMenu := PageMenu{Items: []string{strRegister, strDeleteUser}}
 		return ctx.WriteHTML(PgLayout(loginMenu, LoginPageBody{}))
@@ -23,7 +24,7 @@ func loginRouter(s *rweb.Server) {
 			return ctx.WriteHTML(PgLayout(ErrorComp{Msg: str}))
 		}
 
-		err = login.Login(username, password)
+		err = login.Login(db, username, password)
 		if err != nil {
 			str = "Login failed" + err.Error()
 			return ctx.WriteHTML(PgLayout(ErrorComp{Msg: str}))

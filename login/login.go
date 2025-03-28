@@ -2,171 +2,155 @@ package login
 
 import (
 	"crypto/rand"
+	"database/sql"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"os"
 
-	"golang.org/x/crypto/sha3"
+	_ "github.com/marcboeker/go-duckdb"
+	"golang.org/x/crypto/bcrypt"
 )
 
-// Pretend DB
-var Key []byte
-var HashedPassword string
+// InitDB initializes the database connection
+func InitDB(dbPath string) (*sql.DB, error) {
+	db, err := sql.Open("duckdb", dbPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: %w", err)
+	}
 
-type UserData struct {
-	Username string
-	Key      string
-	Password string
+	// Create users table
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			username VARCHAR PRIMARY KEY,
+			key VARCHAR,
+			password VARCHAR
+		)
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create users table: %w", err)
+	}
+
+	return db, nil
 }
 
-func checkIfExists(username string) (bool, error) {
-	// Read the existing users from the file
-	data, err := os.ReadFile("userdata.json")
+// Register a new user
+func Register(db *sql.DB, username string, password string) error {
+	// Check if username exists
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM users WHERE username = $1", username).Scan(&count)
 	if err != nil {
-		// If the file doesn't exist, assume no users exist yet
-		if os.IsNotExist(err) {
-			return false, nil
-		}
-		return false, err
+		return fmt.Errorf("database error checking username: %w", err)
 	}
-
-	// Unmarshal the JSON data into a slice of UserData
-	var users []UserData
-	err = json.Unmarshal(data, &users)
-	if err != nil {
-		return false, err
-	}
-
-	// Check if the username already exists
-	for _, user := range users {
-		if user.Username == username {
-			return true, nil // Username exists
-		}
-	}
-
-	return false, nil // Username does not exist
-}
-func Register(username string, password string) (err error) {
-	// Check if the username already exists
-	exists, err := checkIfExists(username)
-	if err != nil {
-		return err
-	}
-	if exists {
+	if count > 0 {
 		return fmt.Errorf("username already exists")
 	}
 
-	// Generate a new key for the user
+	// Generate a random key
 	key := make([]byte, 32)
 	_, err = rand.Read(key)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to generate key: %w", err)
 	}
 
-	// Hash the password
-	hashedPassword := hashPassword(key, []byte(password))
-
-	// Read existing users
-	var users []UserData
-	data, err := os.ReadFile("userdata.json")
-	if err == nil {
-		json.Unmarshal(data, &users)
-	}
-
-	// Add new user
-	newUser := UserData{
-		Username: username,
-		Key:      hex.EncodeToString(key),
-		Password: hashedPassword,
-	}
-	users = append(users, newUser)
-
-	// Write back to file
-	jsonData, err := json.MarshalIndent(users, "", "    ")
+	// Hash password
+	hashedPassword, err := HashPassword(password)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to hash password: %w", err)
 	}
-	return os.WriteFile("userdata.json", jsonData, 0644)
+	keyHex := hex.EncodeToString(key)
+
+	// Insert user into database
+	_, err = db.Exec(
+		"INSERT INTO users (username, key, password) VALUES ($1, $2, $3)",
+		username, keyHex, hashedPassword,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to register user: %w", err)
+	}
+
+	return nil
 }
-func Login(username string, password string) (err error) {
-	data, err := os.ReadFile("userdata.json")
-	if err != nil {
-		fmt.Println("Error reading file:", err)
-		return err
-	}
 
-	var users []UserData
-	err = json.Unmarshal(data, &users)
-	if err != nil {
-		fmt.Println("Error unmarshaling JSON:", err)
-		return err
-	}
+// Login a user
+func Login(db *sql.DB, username string, password string) error {
+	var storedHash string
 
-	for _, user := range users {
-		if user.Username == username {
-			keyBytes, err := hex.DecodeString(user.Key)
-			if err != nil {
-				fmt.Println("Error decoding key:", err)
-				return err
-			}
-			currentHash := hashPassword(keyBytes, []byte(password))
-			if currentHash == user.Password {
-				fmt.Println("Login successful!")
-				return nil
-			}
+	// Retrieve password hash from database
+	err := db.QueryRow("SELECT password FROM users WHERE username = $1", username).Scan(&storedHash)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("invalid username or password")
 		}
+		return fmt.Errorf("database error during login: %w", err)
 	}
-	return fmt.Errorf("invalid username or password")
+
+	// Check password
+	if !CheckPasswordHash(password, storedHash) {
+		return fmt.Errorf("invalid username or password")
+	}
+
+	fmt.Println("Login successful!")
+	return nil
 }
-func Delete(username string, password string) (err error) {
-	data, err := os.ReadFile("userdata.json")
+
+// Delete a user
+func Delete(db *sql.DB, username string, password string) error {
+	// Verify user credentials
+	var storedHash string
+	err := db.QueryRow("SELECT password FROM users WHERE username = $1", username).Scan(&storedHash)
 	if err != nil {
-		fmt.Println("Error reading file: ", err)
-		return err
-	}
-
-	var users []UserData
-	err = json.Unmarshal(data, &users)
-	if err != nil {
-		fmt.Println("Error unmarshaling JSON:", err)
-		return err
-	}
-
-	for i, user := range users {
-		if user.Username == username {
-			keyBytes, err := hex.DecodeString(user.Key)
-			if err != nil {
-				fmt.Println("Error decoding key:", err)
-				return err
-			}
-			currentHash := hashPassword(keyBytes, []byte(password))
-			if currentHash == user.Password {
-				// do deletion if passwords match
-				users = append(users[:i], users[i+1:]...)
-
-				jsonData, err := json.MarshalIndent(users, "", "   ")
-				if err != nil {
-					return err
-				}
-				return os.WriteFile("userdata.json", jsonData, 0644)
-			}
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("user not found")
 		}
+		return fmt.Errorf("database error: %w", err)
 	}
-	return
+
+	if !CheckPasswordHash(password, storedHash) {
+		return fmt.Errorf("invalid password")
+	}
+
+	// Delete user
+	_, err = db.Exec("DELETE FROM users WHERE username = $1", username)
+	if err != nil {
+		return fmt.Errorf("failed to delete user: %w", err)
+	}
+
+	return nil
 }
 
-func hashPassword(key []byte, dataToEncrypt []byte) string {
-	hashOutput := make([]byte, 32)
-	hasher := sha3.NewShake256()
+// Table retrieves all usernames from the database
+func Table(db *sql.DB) ([]string, error) {
+	// Query to fetch all usernames
+	rows, err := db.Query("SELECT username FROM users")
+	if err != nil {
+		return nil, fmt.Errorf("failed to query users: %w", err)
+	}
+	defer rows.Close()
 
-	// Write the key and data into the hash.
-	hasher.Write(key)
-	hasher.Write(dataToEncrypt)
+	var usernames []string
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, fmt.Errorf("error scanning username: %w", err)
+		}
+		usernames = append(usernames, username)
+	}
 
-	// Read 32 bytes of output from the hash.
-	hasher.Read(hashOutput)
+	// Check for any errors encountered during iteration
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating users: %w", err)
+	}
 
-	// Return the hexadecimal representation of the hash.
-	return hex.EncodeToString(hashOutput)
+	return usernames, nil
+}
+
+// Hash password using bcrypt
+func HashPassword(password string) (string, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(hashed), err
+}
+
+// Compare password with stored hash
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
